@@ -24,6 +24,7 @@ ROOMS = {
     # ── 扬州城 ──────────────────────────────────────
     "yangzhou_center": {
         "key": "扬州城中心",
+        "map_x": 40, "map_y": 20, "map_category": "州城",
         "desc": (
             "你站在扬州城的十字街口，青石板路四通八达。\n"
             "南北大街两旁店铺林立，酒旗招展，商贩叫卖声不绝于耳。\n"
@@ -33,6 +34,7 @@ ROOMS = {
     },
     "yangzhou_east_market": {
         "key": "扬州东市",
+        "map_x": 42, "map_y": 20, "map_category": "市场",
         "desc": (
             "东市是扬州最热闹的集市，南北货物在此汇聚。\n"
             "波斯商人兜售着香料和珠宝，日本遣唐使好奇地打量着中原风物。\n"
@@ -42,6 +44,7 @@ ROOMS = {
     },
     "yangzhou_west_market": {
         "key": "扬州西市",
+        "map_x": 38, "map_y": 20, "map_category": "市场",
         "desc": (
             "西市比东市略显清静，但同样商贾云集。\n"
             "这里以手工作坊为主，铁匠铺叮当作响，\n"
@@ -51,6 +54,7 @@ ROOMS = {
     },
     "yangzhou_wharf": {
         "key": "扬州码头",
+        "map_x": 40, "map_y": 22, "map_category": "码头",
         "desc": (
             "大运河畔的扬州码头，千帆竞渡，百舸争流。\n"
             "漕运船只满载着江南的稻米、丝绸和瓷器，\n"
@@ -60,6 +64,7 @@ ROOMS = {
     },
     "yangzhou_temple": {
         "key": "大明寺",
+        "map_x": 37, "map_y": 17, "map_category": "寺庙",
         "desc": (
             "大明寺坐落于扬州城西北的蜀冈之上，始建于南朝宋大明年间。\n"
             "寺内古木参天，钟声悠远，香烟缭绕。\n"
@@ -69,6 +74,7 @@ ROOMS = {
     },
     "yangzhou_lake": {
         "key": "瘦西湖",
+        "map_x": 36, "map_y": 19, "map_category": "湖泊",
         "desc": (
             "瘦西湖水波潋滟，两岸杨柳依依，亭台楼阁掩映在绿树丛中。\n"
             "湖面如一条碧绿的绸带蜿蜒曲折，比起杭州西湖更显清瘦秀丽。\n"
@@ -78,6 +84,7 @@ ROOMS = {
     },
     "yangzhou_garden": {
         "key": "个园",
+        "map_x": 38, "map_y": 22, "map_category": "园林",
         "desc": (
             "个园以竹石闻名，园中遍植翠竹，假山叠石巧夺天工。\n"
             "园名取自'竹'字的一半，清雅别致，是扬州盐商的私家园林。\n"
@@ -87,6 +94,7 @@ ROOMS = {
     },
     "yangzhou_inn": {
         "key": "扬州驿站",
+        "map_x": 42, "map_y": 22, "map_category": "驿站",
         "desc": (
             "扬州驿站是官办驿馆，供来往官员和商旅歇息。\n"
             "驿卒们忙前忙后，马厩里拴着各色驿马。\n"
@@ -96,6 +104,7 @@ ROOMS = {
     },
     "yangzhou_office": {
         "key": "扬州府衙",
+        "map_x": 40, "map_y": 18, "map_category": "府衙",
         "desc": (
             "扬州府衙气象森严，朱漆大门两侧立着石狮。\n"
             "这里是扬州大都督府所在，管辖一方军政要务。\n"
@@ -105,6 +114,7 @@ ROOMS = {
     },
     "yangzhou_tavern": {
         "key": "扬州酒楼",
+        "map_x": 43, "map_y": 18, "map_category": "酒楼",
         "desc": (
             "醉仙楼是扬州最有名的酒楼，三层楼阁临街而立。\n"
             "楼上觥筹交错，楼下说书人正讲着隋唐英雄传。\n"
@@ -116,6 +126,7 @@ ROOMS = {
     # ── 扬州城门 ──────────────────────────────────
     "yangzhou_north_gate": {
         "key": "扬州北门",
+        "map_x": 40, "map_y": 16, "map_category": "城门",
         "desc": (
             "扬州北门高大雄伟，城墙上旌旗招展。\n"
             "守城士兵盘查着来往行人。\n"
@@ -125,6 +136,7 @@ ROOMS = {
     },
     "yangzhou_east_gate": {
         "key": "扬州东门",
+        "map_x": 44, "map_y": 20, "map_category": "城门",
         "desc": (
             "扬州东门车水马龙，商旅络绎不绝。\n"
             "东去官道可达泰州、海安。\n"
@@ -134,6 +146,7 @@ ROOMS = {
     },
     "yangzhou_south_gate": {
         "key": "扬州南门",
+        "map_x": 40, "map_y": 24, "map_category": "城门",
         "desc": (
             "扬州南门外便是浩荡的长江。\n"
             "城门上刻着'江淮重镇'四个大字。\n"
@@ -143,6 +156,7 @@ ROOMS = {
     },
     "yangzhou_west_gate": {
         "key": "扬州西门",
+        "map_x": 36, "map_y": 20, "map_category": "城门",
         "desc": (
             "扬州西门略显冷清，多为行脚商人和赶考书生。\n"
             "西去官道可通仪征，再远可达合肥、开封。\n"
@@ -154,6 +168,7 @@ ROOMS = {
     # ── 北方路线 ──────────────────────────────────
     "gaoyou": {
         "key": "高邮",
+        "map_x": 40, "map_y": 12, "map_category": "县城",
         "desc": (
             "高邮是一座古老的运河城市，以高邮湖和咸鸭蛋闻名。\n"
             "大运河穿城而过，河面上舟楫如梭。\n"
@@ -163,6 +178,7 @@ ROOMS = {
     },
     "huaian": {
         "key": "淮安",
+        "map_x": 40, "map_y": 8, "map_category": "州城",
         "desc": (
             "淮安是漕运总督驻地，扼守运河和淮河交汇之处。\n"
             "这里是南北漕运的咽喉，城中粮仓连绵数里。\n"
@@ -172,6 +188,7 @@ ROOMS = {
     },
     "xuzhou": {
         "key": "徐州",
+        "map_x": 38, "map_y": 4, "map_category": "州城",
         "desc": (
             "徐州自古是兵家必争之地，城高池深，气势雄浑。\n"
             "楚汉相争时，项羽曾定都于此，号令天下。\n"
@@ -181,6 +198,7 @@ ROOMS = {
     },
     "luoyang": {
         "key": "洛阳",
+        "map_x": 30, "map_y": 0, "map_category": "都城",
         "desc": (
             "东都洛阳！大唐神都，天下之中！\n"
             "洛水穿城而过，天津桥上车水马龙。\n"
@@ -192,6 +210,7 @@ ROOMS = {
     },
     "changan": {
         "key": "长安",
+        "map_x": 20, "map_y": 0, "map_category": "都城",
         "desc": (
             "长安——大唐帝国的首都，世界最宏伟的城市！\n"
             "朱雀大街宽达百步，直通皇城。\n"
@@ -205,6 +224,7 @@ ROOMS = {
     # ── 东北路线 ──────────────────────────────────
     "taizhou": {
         "key": "泰州",
+        "map_x": 48, "map_y": 20, "map_category": "县城",
         "desc": (
             "泰州是一座安静的江淮小城，以盐业和纺织闻名。\n"
             "城中河道纵横，小桥流水，颇有江南韵味。\n"
@@ -214,6 +234,7 @@ ROOMS = {
     },
     "haian": {
         "key": "海安",
+        "map_x": 52, "map_y": 16, "map_category": "村镇",
         "desc": (
             "海安东临黄海，是重要的海盐产地。\n"
             "盐田一望无际，盐工们在烈日下辛勤劳作。\n"
@@ -223,6 +244,7 @@ ROOMS = {
     },
     "yancheng": {
         "key": "盐城",
+        "map_x": 52, "map_y": 10, "map_category": "县城",
         "desc": (
             "盐城顾名思义，以产盐著称，是江淮盐业的中心之一。\n"
             "城外盐田如棋盘般整齐排列，白花花的盐堆如小山。\n"
@@ -234,6 +256,7 @@ ROOMS = {
     # ── 东方路线 ──────────────────────────────────
     "tongzhou": {
         "key": "通州",
+        "map_x": 56, "map_y": 18, "map_category": "县城",
         "desc": (
             "通州是长江入海口的重要港口，海船云集。\n"
             "从这里可以乘船出海，前往日本、新罗。\n"
@@ -243,6 +266,7 @@ ROOMS = {
     },
     "haimen": {
         "key": "海门",
+        "map_x": 60, "map_y": 18, "map_category": "村镇",
         "desc": (
             "海门是长江入海的门户，江海交汇之处波滔汹涌。\n"
             "这里是渔民的家园，渔船星罗棋布。\n"
@@ -252,6 +276,7 @@ ROOMS = {
     },
     "east_sea": {
         "key": "东海之滨",
+        "map_x": 64, "map_y": 18, "map_category": "海滨",
         "desc": (
             "你站在东海之滨，脚下是金色的沙滩，眼前是浩瀚的汪洋。\n"
             "海浪拍打着礁石，溅起白色的浪花。\n"
@@ -264,6 +289,7 @@ ROOMS = {
     # ── 东南路线 ──────────────────────────────────
     "guazhou": {
         "key": "瓜洲渡",
+        "map_x": 40, "map_y": 26, "map_category": "渡口",
         "desc": (
             "瓜洲渡是长江上最重要的渡口之一。\n"
             '王安石曾在此写下："京口瓜洲一水间，钟山只隔数重山。"\n'
@@ -273,6 +299,7 @@ ROOMS = {
     },
     "zhenjiang": {
         "key": "镇江",
+        "map_x": 40, "map_y": 30, "map_category": "州城",
         "desc": (
             "镇江古称京口，是长江南岸的重镇。\n"
             "金山寺屹立江中，白蛇传中水漫金山的传说就发生于此。\n"
@@ -282,6 +309,7 @@ ROOMS = {
     },
     "suzhou": {
         "key": "苏州",
+        "map_x": 46, "map_y": 34, "map_category": "州城",
         "desc": (
             "上有天堂，下有苏杭！苏州之美，冠绝江南。\n"
             "小桥流水，粉墙黛瓦，吴侬软语，处处是画。\n"
@@ -292,6 +320,7 @@ ROOMS = {
     },
     "hangzhou": {
         "key": "杭州",
+        "map_x": 46, "map_y": 38, "map_category": "州城",
         "desc": (
             "杭州！江南第一名城，人间天堂！\n"
             "西湖十景美不胜收，断桥残雪，苏堤春晓，三潭印月……\n"
@@ -304,6 +333,7 @@ ROOMS = {
     # ── 南方路线 ──────────────────────────────────
     "jinling": {
         "key": "金陵城",
+        "map_x": 34, "map_y": 30, "map_category": "州城",
         "desc": (
             "金陵，六朝古都，龙盘虎踞之地！\n"
             "石头城雄踞长江之畔，钟山风雨起苍黄。\n"
@@ -316,6 +346,7 @@ ROOMS = {
     # ── 西南路线 ──────────────────────────────────
     "yizheng": {
         "key": "仪征",
+        "map_x": 34, "map_y": 20, "map_category": "县城",
         "desc": (
             "仪征是扬州西面的门户小城，依山傍水。\n"
             "这里的铜矿开采已有数百年历史，矿工们日夜劳作。\n"
@@ -325,6 +356,7 @@ ROOMS = {
     },
     "hefei": {
         "key": "合肥",
+        "map_x": 28, "map_y": 18, "map_category": "州城",
         "desc": (
             "合肥是江淮之间的重镇，三国时张辽曾在此大破吴军。\n"
             "逍遥津古战场遗址犹存，令人感慨万千。\n"
@@ -336,6 +368,7 @@ ROOMS = {
     # ── 西方路线 ──────────────────────────────────
     "chuzhou": {
         "key": "滁州",
+        "map_x": 30, "map_y": 24, "map_category": "县城",
         "desc": (
             "滁州是一座山清水秀的小城，琅琊山风景如画。\n"
             '欧阳修在《醉翁亭记》中写道："醉翁之意不在酒，在乎山水之间也。"\n'
@@ -345,6 +378,7 @@ ROOMS = {
     },
     "kaifeng": {
         "key": "开封",
+        "map_x": 30, "map_y": 8, "map_category": "州城",
         "desc": (
             "开封古称汴州，是中原重镇，水陆交通枢纽。\n"
             "汴河穿城而过，两岸商铺鳞次栉比。\n"
@@ -356,6 +390,7 @@ ROOMS = {
     # ── 西北路线 ──────────────────────────────────
     "xuyi": {
         "key": "盱眙",
+        "map_x": 36, "map_y": 14, "map_category": "村镇",
         "desc": (
             "盱眙是淮河边的一座小城，以小龙虾闻名后世。\n"
             "淮河在此拐了一个大弯，河水浑浊却滋养了两岸土地。\n"
@@ -365,6 +400,7 @@ ROOMS = {
     },
     "suzhou_anhui": {
         "key": "宿州",
+        "map_x": 34, "map_y": 10, "map_category": "县城",
         "desc": (
             "宿州是淮北平原上的重镇，周围一马平川。\n"
             "这里民风淳朴，是小麦和棉花的主产区。\n"
@@ -374,6 +410,7 @@ ROOMS = {
     },
     "shangqiu": {
         "key": "商丘",
+        "map_x": 34, "map_y": 6, "map_category": "县城",
         "desc": (
             "商丘是殷商故地，历史悠久，文化底蕴深厚。\n"
             "这里是火神阏伯的封地，阏伯台是华夏最古老的天文台。\n"
@@ -385,6 +422,7 @@ ROOMS = {
     # ── 特殊场景 ──────────────────────────────────
     "yangtze_river": {
         "key": "长江之上",
+        "map_x": 37, "map_y": 28, "map_category": "水路",
         "desc": (
             "你正乘船航行在浩瀚的长江之上。\n"
             "江水滔滔，两岸青山如黛，猿声啼不住。\n"
@@ -394,6 +432,7 @@ ROOMS = {
     },
     "canal": {
         "key": "大运河",
+        "map_x": 40, "map_y": 10, "map_category": "水路",
         "desc": (
             "大运河是世界上最长的人工运河，连接南北，贯通五水。\n"
             "河面上漕船、商船、客船往来如织，\n"
@@ -548,7 +587,12 @@ def build():
         obj = create_object(
             typeclass="typeclasses.rooms.Room",
             key=room_data["key"],
-            attributes=[("desc", room_data["desc"])],
+            attributes=[
+                ("desc", room_data["desc"]),
+                ("map_x", room_data.get("map_x", 0)),
+                ("map_y", room_data.get("map_y", 0)),
+                ("map_category", room_data.get("map_category", "野外")),
+            ],
         )
         if obj:
             rooms[room_key] = obj
@@ -582,7 +626,19 @@ def build():
     if start_room:
         from evennia import settings
         settings.START_LOCATION = start_room.dbref
+        settings.DEFAULT_HOME = start_room.dbref
         print(f"\n起始地点已设为: 扬州城中心 (#{start_room.dbref})")
+
+        # 将现有角色的出生点也设为扬州城中心
+        try:
+            from evennia.utils import search
+            chars = search.search_object("", typeclass="typeclasses.characters.Character")
+            for char in chars:
+                if hasattr(char, "home") and (char.home is None or char.home.id == 2):
+                    char.home = start_room
+                    print(f"  [更新] {char.name} 的出生点已设为扬州城中心")
+        except Exception as e:
+            print(f"  [注意] 更新角色出生点时出错: {e}")
 
     print(f"\n世界构建完成！共创建 {len(rooms)} 个房间，{len(EXITS)} 条出口。")
     return rooms

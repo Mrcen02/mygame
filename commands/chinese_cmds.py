@@ -1451,7 +1451,32 @@ class CmdPray(ChineseCommand):
 
 
 # =============================================================================
-# 十四、命令集
+# 十四、地图指令
+# =============================================================================
+
+class CmdMap(ChineseCommand):
+    """
+    查看地图
+
+    用法:
+      地图              - 查看世界地图
+      地图 世界         - 查看世界地图
+      地图 区域         - 查看区域地图（周边）
+      地图 本地         - 查看本地地图（当前房间及出口）
+      map              - 同上
+    """
+    __doc__ = "查看地图"
+    key = "地图"
+    aliases = ["map", "查看地图", "世界地图", "区域地图", "本地地图"]
+
+    def func(self):
+        from world.map import show_map
+        zoom = self.args.strip() if self.args else "世界"
+        show_map(self.caller, zoom)
+
+
+# =============================================================================
+# 十五、命令集
 # =============================================================================
 
 from evennia import CmdSet
@@ -1600,3 +1625,6 @@ class ChineseCmdSet(CmdSet):
         self.add(CmdPlaySleep())
         self.add(CmdFan())
         self.add(CmdPray())
+
+        # 地图
+        self.add(CmdMap())
