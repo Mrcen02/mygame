@@ -1,0 +1,480 @@
+/* ============================================================
+   扬州古城 · 盛唐风华 — WebClient 样式
+   布局：顶部聊天屏 | 左侧面板 | 中间主区域
+   ============================================================ */
+
+/* ---------- 全局 ---------- */
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --bg-dark:       #1a1410;
+    --bg-panel:      #241e18;
+    --bg-input:      #2a2218;
+    --border:        #4a3828;
+    --border-gold:   #8b6914;
+    --text-primary:  #d4c5a9;
+    --text-dim:      #8a7a6a;
+    --text-gold:     #c9a84c;
+    --text-red:      #c05050;
+    --text-green:    #50a060;
+    --text-cyan:     #50a0a0;
+    --text-white:    #e8dcc8;
+    --btn-hover:     #3a2a18;
+    --btn-active:    #5a3a18;
+    --scrollbar-bg:  #2a2218;
+    --scrollbar-thumb: #4a3828;
+    --font-main:     "Noto Sans SC", "Microsoft YaHei", "PingFang SC", sans-serif;
+    --font-mono:     "Courier New", monospace;
+}
+
+html, body {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    font-family: var(--font-main);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* ---------- 主容器布局 ---------- */
+#app {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    grid-template-rows: 1fr auto;
+    height: 100vh;
+    gap: 0;
+}
+
+/* ---------- 顶部聊天屏 ---------- */
+#chat-panel {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-panel);
+    border-bottom: 2px solid var(--border-gold);
+    overflow: hidden;
+}
+
+#chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 16px;
+    background: linear-gradient(180deg, #3a2818 0%, #2a1a10 100%);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+#chat-header .title {
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--text-gold);
+    letter-spacing: 4px;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+
+.connection-status {
+    font-size: 12px;
+    padding: 2px 10px;
+    border-radius: 10px;
+    background: rgba(0,0,0,0.3);
+}
+
+.connection-status.connected {
+    color: var(--text-green);
+}
+
+.connection-status.disconnected {
+    color: var(--text-red);
+}
+
+.connection-status.connecting {
+    color: var(--text-gold);
+}
+
+/* 消息区域 */
+#chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 14px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+#chat-messages::-webkit-scrollbar {
+    width: 6px;
+}
+#chat-messages::-webkit-scrollbar-track {
+    background: var(--scrollbar-bg);
+}
+#chat-messages::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 3px;
+}
+
+#chat-messages .msg-line {
+    padding: 1px 0;
+}
+
+/* 输入栏 */
+#chat-input-bar {
+    display: flex;
+    align-items: center;
+    padding: 6px 10px;
+    background: var(--bg-input);
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+#chat-input-bar .prompt {
+    color: var(--text-gold);
+    font-weight: bold;
+    margin-right: 6px;
+    font-size: 16px;
+}
+
+#chat-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-family: var(--font-main);
+    font-size: 14px;
+    padding: 4px 0;
+    outline: none;
+}
+
+#chat-input::placeholder {
+    color: var(--text-dim);
+}
+
+#send-btn {
+    background: var(--border-gold);
+    color: #1a1410;
+    border: none;
+    padding: 4px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+#send-btn:hover {
+    background: #a08020;
+}
+
+/* ---------- 左侧面板 ---------- */
+#side-panel {
+    grid-column: 1;
+    grid-row: 2;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-panel);
+    border-right: 2px solid var(--border);
+    overflow-y: auto;
+    gap: 0;
+}
+
+#side-panel::-webkit-scrollbar {
+    width: 4px;
+}
+#side-panel::-webkit-scrollbar-track {
+    background: var(--scrollbar-bg);
+}
+#side-panel::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 2px;
+}
+
+.side-section {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0;
+}
+
+.side-title {
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: bold;
+    color: var(--text-gold);
+    background: rgba(0,0,0,0.2);
+    border-bottom: 1px solid var(--border);
+    letter-spacing: 2px;
+}
+
+.side-list {
+    padding: 4px 0;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.side-list::-webkit-scrollbar {
+    width: 3px;
+}
+.side-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+.side-list::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 2px;
+}
+
+.side-empty {
+    padding: 10px 12px;
+    color: var(--text-dim);
+    font-size: 12px;
+    font-style: italic;
+    text-align: center;
+}
+
+.side-item {
+    padding: 4px 12px;
+    font-size: 12px;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: background 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.side-item:hover {
+    background: var(--btn-hover);
+}
+
+.side-item .icon {
+    font-size: 14px;
+}
+
+/* 状态栏 */
+#status-bar {
+    margin-top: auto;
+    border-top: 2px solid var(--border-gold);
+}
+
+.status-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 12px;
+    font-size: 12px;
+}
+
+.status-label {
+    color: var(--text-dim);
+}
+
+.status-value {
+    color: var(--text-gold);
+    font-weight: bold;
+}
+
+/* ---------- 中间主区域 ---------- */
+#main-area {
+    grid-column: 2;
+    grid-row: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 20px;
+    overflow-y: auto;
+    gap: 16px;
+    background:
+        radial-gradient(ellipse at center, rgba(60,40,20,0.15) 0%, transparent 70%),
+        var(--bg-dark);
+}
+
+#main-area::-webkit-scrollbar {
+    width: 6px;
+}
+#main-area::-webkit-scrollbar-track {
+    background: var(--scrollbar-bg);
+}
+#main-area::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 3px;
+}
+
+/* 房间信息 */
+#room-info {
+    text-align: center;
+    max-width: 600px;
+    width: 100%;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+}
+
+#room-name {
+    font-size: 22px;
+    font-weight: bold;
+    color: var(--text-gold);
+    margin-bottom: 8px;
+    letter-spacing: 3px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+#room-desc {
+    font-size: 14px;
+    color: var(--text-primary);
+    line-height: 1.8;
+    white-space: pre-wrap;
+    text-align: left;
+}
+
+/* 方向按钮面板 */
+#direction-pad {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: rgba(0,0,0,0.3);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 18px;
+}
+
+.dir-row {
+    display: flex;
+    gap: 6px;
+}
+
+.dir-vertical {
+    margin-top: 6px;
+    gap: 10px;
+}
+
+.dir-btn {
+    width: 52px;
+    height: 52px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    background: linear-gradient(180deg, #3a2a18 0%, #2a1a10 100%);
+    color: var(--text-gold);
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+}
+
+.dir-btn:hover {
+    background: linear-gradient(180deg, #5a3a18 0%, #3a2a18 100%);
+    border-color: var(--border-gold);
+    color: #e0c060;
+    transform: scale(1.05);
+    box-shadow: 0 0 12px rgba(139,105,20,0.3);
+}
+
+.dir-btn:active {
+    background: #6a4a20;
+    transform: scale(0.95);
+}
+
+.dir-center {
+    font-size: 14px;
+    color: var(--text-cyan);
+    border-color: #3a5a5a;
+}
+
+.dir-vertical .dir-btn {
+    width: 44px;
+    height: 36px;
+    font-size: 14px;
+}
+
+/* 快速操作按钮 */
+#quick-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+}
+
+.action-btn {
+    padding: 8px 18px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: linear-gradient(180deg, #2a2018 0%, #1a1410 100%);
+    color: var(--text-primary);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: var(--font-main);
+}
+
+.action-btn:hover {
+    background: linear-gradient(180deg, #3a2a18 0%, #2a1a10 100%);
+    border-color: var(--border-gold);
+    color: var(--text-gold);
+}
+
+.action-btn:active {
+    background: #4a3a20;
+}
+
+/* ---------- 底栏 ---------- */
+#help-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(20,16,10,0.95);
+    border-top: 1px solid var(--border);
+    padding: 4px 16px;
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-dim);
+    z-index: 10;
+}
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 768px) {
+    #app {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr auto auto;
+    }
+
+    #side-panel {
+        grid-column: 1;
+        grid-row: 3;
+        flex-direction: row;
+        overflow-x: auto;
+        border-right: none;
+        border-top: 1px solid var(--border);
+        max-height: 120px;
+    }
+
+    #main-area {
+        grid-column: 1;
+        grid-row: 2;
+        padding: 10px;
+        gap: 10px;
+    }
+
+    .dir-btn {
+        width: 42px;
+        height: 42px;
+        font-size: 16px;
+    }
+
+    #chat-panel {
+        grid-row: 1;
+    }
+
+    #help-bar {
+        display: none;
+    }
+}

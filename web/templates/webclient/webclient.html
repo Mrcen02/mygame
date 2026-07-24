@@ -1,0 +1,121 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>扬 州 古 城 · 盛 唐 风 华</title>
+    <link rel="stylesheet" href="{% static 'webclient/css/webclient.css' %}">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏯</text></svg>">
+</head>
+<body>
+
+<!-- 主容器 -->
+<div id="app">
+
+    <!-- ==================== 顶部聊天屏 ==================== -->
+    <div id="chat-panel">
+        <div id="chat-header">
+            <span class="title">扬 州 古 城 · 盛 唐 风 华</span>
+            <span class="connection-status" id="conn-status">● 连接中...</span>
+        </div>
+        <div id="chat-messages"></div>
+        <div id="chat-input-bar">
+            <span class="prompt">&gt;</span>
+            <input type="text" id="chat-input" placeholder="输入指令或聊天内容..." autofocus>
+            <button id="send-btn" title="发送">发送</button>
+        </div>
+    </div>
+
+    <!-- ==================== 中间主区域 ==================== -->
+    <div id="main-area">
+
+        <!-- 房间信息 -->
+        <div id="room-info">
+            <div id="room-name">扬州城中心</div>
+            <div id="room-desc">正在加载世界...</div>
+        </div>
+
+        <!-- 方向按钮面板 -->
+        <div id="direction-pad">
+            <div class="dir-row">
+                <button class="dir-btn" data-cmd="西北" title="西北">↖</button>
+                <button class="dir-btn" data-cmd="北" title="北">↑</button>
+                <button class="dir-btn" data-cmd="东北" title="东北">↗</button>
+            </div>
+            <div class="dir-row">
+                <button class="dir-btn" data-cmd="西" title="西">←</button>
+                <button class="dir-btn dir-center" data-cmd="地图" title="查看地图">图</button>
+                <button class="dir-btn" data-cmd="东" title="东">→</button>
+            </div>
+            <div class="dir-row">
+                <button class="dir-btn" data-cmd="西南" title="西南">↙</button>
+                <button class="dir-btn" data-cmd="南" title="南">↓</button>
+                <button class="dir-btn" data-cmd="东南" title="东南">↘</button>
+            </div>
+            <div class="dir-row dir-vertical">
+                <button class="dir-btn" data-cmd="上" title="上">上</button>
+                <button class="dir-btn" data-cmd="下" title="下">下</button>
+            </div>
+        </div>
+
+        <!-- 快速操作按钮 -->
+        <div id="quick-actions">
+            <button class="action-btn" data-cmd="看">👁 观察</button>
+            <button class="action-btn" data-cmd="背包">🎒 背包</button>
+            <button class="action-btn" data-cmd="地图">🗺 地图</button>
+            <button class="action-btn" data-cmd="地图 区域">🔍 区域</button>
+            <button class="action-btn" data-cmd="地图 本地">📍 本地</button>
+        </div>
+    </div>
+
+    <!-- ==================== 左侧面板 ==================== -->
+    <div id="side-panel">
+        <!-- 玩家列表 -->
+        <div class="side-section">
+            <div class="side-title">👤 玩家</div>
+            <div id="player-list" class="side-list">
+                <div class="side-empty">暂无其他玩家</div>
+            </div>
+        </div>
+
+        <!-- 人物列表 -->
+        <div class="side-section">
+            <div class="side-title">🧑 人物</div>
+            <div id="char-list" class="side-list">
+                <div class="side-empty">暂无人物</div>
+            </div>
+        </div>
+
+        <!-- 物品列表 -->
+        <div class="side-section">
+            <div class="side-title">📦 物品</div>
+            <div id="item-list" class="side-list">
+                <div class="side-empty">暂无物品</div>
+            </div>
+        </div>
+
+        <!-- 状态栏 -->
+        <div class="side-section" id="status-bar">
+            <div class="side-title">💓 状态</div>
+            <div class="status-item">
+                <span class="status-label">房间</span>
+                <span class="status-value" id="status-room">扬州城中心</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">位置</span>
+                <span class="status-value" id="status-coords">--</span>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- 底栏指令提示 -->
+<div id="help-bar">
+    <span>点击方向按钮移动 | 下方输入框输入中文指令 | 支持：东 南 西 北 吃 喝 拿 看 背包 地图</span>
+</div>
+
+<script src="{% static 'webclient/js/webclient.js' %}"></script>
+</body>
+</html>
