@@ -1,10 +1,9 @@
 /* ============================================================
-   扬州古城 · 盛唐风华 — WebClient JavaScript
-   使用 Evennia 的 evennia.js 库进行 WebSocket 通信
-   功能：三栏布局、点击移动、消息解析、面板更新
+   扬州古城 · 盛唐风华 — WebClient JavaScript (原生 WebSocket 版)
+   功能：Evennia WebSocket 通信、三栏布局、点击移动、响应式
    ============================================================ */
 
-$(document).ready(function() {
+(function() {
     'use strict';
 
     // ============ DOM 引用 ============
@@ -18,70 +17,116 @@ $(document).ready(function() {
     var charListEl     = document.getElementById('char-list');
     var itemListEl     = document.getElementById('item-list');
     var statusRoomEl   = document.getElementById('status-room');
-    var statusCoordsEl = document.getElementById('status-coords');
 
     // ============ 状态 ============
+    var ws = null;
+    var reconnectTimer = null;
+    var isConnecting = false;
+    var messageBuffer = '';
     var currentRoomName = '';
     var currentRoomDesc = '';
-    var messageBuffer = '';
-    var initialized = false;
 
-    // ============ 初始化 Evennia 连接 ============
-    function initConnection() {
-        if (typeof Evennia === 'undefined') {
-            setStatus('disconnected', '● Evennia.js 未加载');
+    // ============ WebSocket 通信 ============
+    
+    function connectWebSocket() {
+        if (isConnecting || (ws && ws.readyState === WebSocket.OPEN)) {
+            return;
+        }
+        
+        isConnecting = true;
+        setStatus('connecting', '● 连接中...');
+        
+        try {
+            // Evennia 的 WebSocket 地址格式
+            ws = new WebSocket(ws_url);
+        } catch (e) {
+            console.error('WebSocket 创建失败:', e);
+            scheduleReconnect();
             return;
         }
 
-        // 初始化 Evennia 通信
-        Evennia.init({
-            connection: Evennia.WebsocketConnection
-        });
-
-        // 监听文本消息
-        Evennia.emitter.on('text', function(args, kwargs) {
-            if (args && args.length >= 2) {
-                handleTextMessage(args[1].text || '');
-            }
-        });
-
-        // 监听连接状态
-        Evennia.emitter.on('connection_open', function() {
+        ws.onopen = function() {
+            isConnecting = false;
             setStatus('connected', '● 已连接');
             addChatMsg('system', '── 欢迎来到扬州古城 · 盛唐风华 ──');
             addChatMsg('system', '点击方向按钮移动，或输入中文指令。');
-        });
+            clearTimeout(reconnectTimer);
+        };
 
-        Evennia.emitter.on('connection_close', function() {
+        ws.onmessage = function(event) {
+            handleServerMessage(event.data);
+        };
+
+        ws.onclose = function(event) {
+            isConnecting = false;
             setStatus('disconnected', '● 已断开');
-        });
+            if (event.wasClean) {
+                addChatMsg('system', '连接已关闭。');
+            } else {
+                addChatMsg('system', '连接异常断开，正在重连...');
+                scheduleReconnect();
+            }
+        };
 
-        Evennia.emitter.on('connection_error', function() {
-            setStatus('disconnected', '● 连接出错');
-        });
-
-        // 监听提示符
-        Evennia.emitter.on('prompt', function(args, kwargs) {
-            // 提示符，可用于检测命令完成
-        });
-
-        initialized = true;
+        ws.onerror = function(error) {
+            console.error('WebSocket 错误:', error);
+            // onclose 会在 onerror 后触发，所以重连逻辑在 onclose 中处理
+        };
     }
 
-    function setStatus(cls, text) {
-        connStatus.className = 'connection-status ' + cls;
-        connStatus.textContent = text;
+    function scheduleReconnect() {
+        if (reconnectTimer) {
+            clearTimeout(reconnectTimer);
+        }
+        reconnectTimer = setTimeout(function() {
+            addChatMsg('system', '尝试重新连接...');
+            connectWebSocket();
+        }, 3000);
+    }
+
+    function disconnectWebSocket() {
+        if (ws) {
+            ws.close();
+            ws = null;
+        }
+        if (reconnectTimer) {
+            clearTimeout(reconnectTimer);
+        }
+    }
+
+    function sendCommand(cmd) {
+        if (!ws || ws.readyState !== WebSocket.OPEN) {
+            addChatMsg('system', '尚未连接到服务器。');
+            return;
+        }
+
+        // Evennia WebSocket 消息格式: ["text", {"text": "内容"}]
+        var message = JSON.stringify(["text", { text: cmd + "\n" }]);
+        ws.send(message);
+        addChatMsg('sent', '> ' + cmd);
+    }
+
+    function handleServerMessage(data) {
+        try {
+            var parsed = JSON.parse(data);
+            
+            // Evennia 返回格式: ["text", {"text": "服务器输出"}]
+            if (Array.isArray(parsed) && parsed[0] === 'text' && parsed[1]) {
+                var text = parsed[1].text || '';
+                handleTextMessage(text);
+            }
+        } catch (e) {
+            // 可能是纯文本或其他格式
+            handleTextMessage(String(data));
+        }
     }
 
     // ============ 消息处理 ============
-    function handleTextMessage(text) {
-        // 去除 ANSI 转义码
-        var cleanText = stripAnsi(text);
 
-        // 累积到缓冲区
+    function handleTextMessage(text) {
+        var cleanText = stripAnsi(text);
         messageBuffer += cleanText;
 
-        // 按换行分割处理
         var lines = messageBuffer.split('\n');
         messageBuffer = '';
 
@@ -143,31 +188,25 @@ $(document).ready(function() {
         }
     }
 
-    // ============ ANSI 转义码去除 ============
+    // ============ 工具函数 ============
+
     function stripAnsi(text) {
         return text.replace(/\x1b\[[0-9;]*m/g, '')
                    .replace(/\x1b\]0;.*?\x07/g, '')
                    .replace(/\r/g, '');
     }
 
-    // ============ 聊天消息 ============
+    function setStatus(cls, text) {
+        connStatus.className = 'connection-status ' + cls;
+        connStatus.textContent = text;
+    }
+
     function addChatMsg(type, text) {
         var div = document.createElement('div');
         div.className = 'msg-line msg-' + type;
         div.textContent = text;
         chatMessages.appendChild(div);
         chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-
-    // ============ 发送指令 ============
-    function sendCommand(cmd) {
-        if (!initialized) {
-            addChatMsg('system', '尚未连接到服务器。');
-            return;
-        }
-
-        Evennia.msg('text', ['text', { text: cmd + '\n' }]);
-        addChatMsg('sent', '> ' + cmd);
     }
 
     // ============ 事件绑定 ============
@@ -185,6 +224,7 @@ $(document).ready(function() {
         }
     });
 
+    // 发送函数
     function sendInput() {
         var text = chatInput.value.trim();
         if (!text) return;
@@ -192,7 +232,7 @@ $(document).ready(function() {
         chatInput.value = '';
     }
 
-    // 方向按钮点击
+    // 方向按钮
     document.querySelectorAll('.dir-btn').forEach(function(btn) {
         btn.addEventListener('click', function() {
             var cmd = this.getAttribute('data-cmd');
@@ -212,9 +252,12 @@ $(document).ready(function() {
         });
     });
 
-    // 键盘快捷键
+    // 键盘快捷键 (仅在桌面端非输入状态)
     document.addEventListener('keydown', function(e) {
+        // 不在输入框中时才触发快捷键
         if (document.activeElement === chatInput) return;
+        // 移动端不拦截键盘（避免与虚拟键盘冲突）
+        if (window.innerWidth <= 768) return;
 
         switch (e.key) {
             case 'ArrowUp':    e.preventDefault(); sendCommand('北'); break;
@@ -244,11 +287,26 @@ $(document).ready(function() {
         chatInput.focus();
     });
 
+    // 页面隐藏时关闭连接，可见时重新连接
+    document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'hidden') {
+            disconnectWebSocket();
+        } else {
+            connectWebSocket();
+        }
+    });
+
     // ============ 启动 ============
     function start() {
-        initConnection();
+        connectWebSocket();
         chatInput.focus();
     }
 
-    start();
-});
+    // DOM 就绪后启动
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', start);
+    } else {
+        start();
+    }
+
+})();

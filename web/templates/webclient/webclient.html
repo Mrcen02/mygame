@@ -3,56 +3,23 @@
 <html dir="ltr" lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>扬 州 古 城 · 盛 唐 风 华</title>
     <meta name="author" content="Evennia" />
-    <meta name="generator" content="Evennia" />
-
+    
     <!-- 自定义 CSS -->
     <link rel="stylesheet" href="{% static 'webclient/css/webclient.css' %}">
 
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏯</text></svg>">
 
-    <!-- jQuery (evennia.js 依赖) -->
-    <script src="https://code.jquery.com/jquery-3.2.1.min.js"
-            integrity="sha384-xBuQ/xzmlsLoJpyjoggmTEz8OWUFM0/RC5BsqQBDX2v5cMvDHcMakNTNrHIW2I5f"
-            crossorigin="anonymous"></script>
-
-    <script type="text/javascript">
-        if(!window.jQuery) {
-            document.write("<div class='err'>jQuery 加载失败，请检查浏览器 JavaScript 设置。</div>");
-        }
-    </script>
-
     <!-- WebSocket 配置 -->
-    <script language="javascript" type="text/javascript">
-        function generateUID() {
-            return Math.random().toString(36).substring(2, 15) +
-                Math.random().toString(36).substring(2, 15);
-        }
-        var cuid = generateUID();
-
-        {% if websocket_enabled %}
-            var wsactive = true;
-        {% else %}
-            var wsactive = false;
-        {% endif %}
-
-        {% if browser_sessid %}
-           var csessid = "{{browser_sessid}}";
-        {% else %}
-           var csessid = false;
-        {% endif %}
-
-        {% if websocket_url %}
-            var wsurl = "{{websocket_url}}";
-        {% else %}
-            var wsurl = "ws://" + window.location.hostname + ":{{websocket_port}}";
-        {% endif %}
+    <script type="text/javascript">
+        // Evennia WebSocket 配置
+        var ws_port = "{{ websocket_port }}";
+        var ws_host = window.location.hostname;
+        var ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
+        var ws_url = ws_scheme + "://" + ws_host + ":" + ws_port + "/webclient/ws/";
     </script>
-
-    <!-- Evennia 通信库 -->
-    <script src="{% static 'webclient/js/evennia.js' %}" language="javascript" type="text/javascript"></script>
 </head>
 <body>
 
@@ -68,92 +35,91 @@
         <div id="chat-messages"></div>
         <div id="chat-input-bar">
             <span class="prompt">&gt;</span>
-            <input type="text" id="chat-input" placeholder="输入指令或聊天内容..." autofocus>
+            <input type="text" id="chat-input" placeholder="输入指令或聊天内容..." autocomplete="off">
             <button id="send-btn" title="发送">发送</button>
         </div>
     </div>
 
-    <!-- ==================== 左侧面板 ==================== -->
-    <div id="side-panel">
-        <div class="side-section">
-            <div class="side-title">👤 玩家</div>
-            <div id="player-list" class="side-list">
-                <div class="side-empty">暂无其他玩家</div>
+    <!-- ==================== 下方容器 (侧边栏 + 主区域) ==================== -->
+    <div id="bottom-container">
+        
+        <!-- 左侧面板 (桌面端) / 底部面板 (移动端) -->
+        <div id="side-panel">
+            <div class="side-section">
+                <div class="side-title">👤 玩家</div>
+                <div id="player-list" class="side-list">
+                    <div class="side-empty">暂无其他玩家</div>
+                </div>
+            </div>
+
+            <div class="side-section">
+                <div class="side-title">🧑 人物</div>
+                <div id="char-list" class="side-list">
+                    <div class="side-empty">暂无人物</div>
+                </div>
+            </div>
+
+            <div class="side-section">
+                <div class="side-title">📦 物品</div>
+                <div id="item-list" class="side-list">
+                    <div class="side-empty">暂无物品</div>
+                </div>
+            </div>
+
+            <div class="side-section" id="status-bar">
+                <div class="side-title">💓 状态</div>
+                <div class="status-item">
+                    <span class="status-label">房间</span>
+                    <span class="status-value" id="status-room">--</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">位置</span>
+                    <span class="status-value" id="status-coords">--</span>
+                </div>
             </div>
         </div>
 
-        <div class="side-section">
-            <div class="side-title">🧑 人物</div>
-            <div id="char-list" class="side-list">
-                <div class="side-empty">暂无人物</div>
+        <!-- 中间主区域 -->
+        <div id="main-area">
+            <div id="room-info">
+                <div id="room-name">扬州城中心</div>
+                <div id="room-desc">正在加载世界...</div>
             </div>
-        </div>
 
-        <div class="side-section">
-            <div class="side-title">📦 物品</div>
-            <div id="item-list" class="side-list">
-                <div class="side-empty">暂无物品</div>
+            <div id="direction-pad">
+                <div class="dir-row">
+                    <button class="dir-btn" data-cmd="西北" title="西北">↖</button>
+                    <button class="dir-btn" data-cmd="北" title="北">↑</button>
+                    <button class="dir-btn" data-cmd="东北" title="东北">↗</button>
+                </div>
+                <div class="dir-row">
+                    <button class="dir-btn" data-cmd="西" title="西">←</button>
+                    <button class="dir-btn dir-center" data-cmd="地图" title="查看地图">图</button>
+                    <button class="dir-btn" data-cmd="东" title="东">→</button>
+                </div>
+                <div class="dir-row">
+                    <button class="dir-btn" data-cmd="西南" title="西南">↙</button>
+                    <button class="dir-btn" data-cmd="南" title="南">↓</button>
+                    <button class="dir-btn" data-cmd="东南" title="东南">↘</button>
+                </div>
+                <div class="dir-row dir-vertical">
+                    <button class="dir-btn" data-cmd="上" title="上">上</button>
+                    <button class="dir-btn" data-cmd="下" title="下">下</button>
+                </div>
             </div>
-        </div>
 
-        <div class="side-section" id="status-bar">
-            <div class="side-title">💓 状态</div>
-            <div class="status-item">
-                <span class="status-label">房间</span>
-                <span class="status-value" id="status-room">--</span>
-            </div>
-            <div class="status-item">
-                <span class="status-label">位置</span>
-                <span class="status-value" id="status-coords">--</span>
+            <div id="quick-actions">
+                <button class="action-btn" data-cmd="看">👁 观察</button>
+                <button class="action-btn" data-cmd="背包">🎒 背包</button>
+                <button class="action-btn" data-cmd="地图">🗺 地图</button>
+                <button class="action-btn" data-cmd="地图 区域">🔍 区域</button>
+                <button class="action-btn" data-cmd="地图 本地">📍 本地</button>
             </div>
         </div>
     </div>
-
-    <!-- ==================== 中间主区域 ==================== -->
-    <div id="main-area">
-        <div id="room-info">
-            <div id="room-name">扬州城中心</div>
-            <div id="room-desc">正在加载世界...</div>
-        </div>
-
-        <div id="direction-pad">
-            <div class="dir-row">
-                <button class="dir-btn" data-cmd="西北" title="西北">↖</button>
-                <button class="dir-btn" data-cmd="北" title="北">↑</button>
-                <button class="dir-btn" data-cmd="东北" title="东北">↗</button>
-            </div>
-            <div class="dir-row">
-                <button class="dir-btn" data-cmd="西" title="西">←</button>
-                <button class="dir-btn dir-center" data-cmd="地图" title="查看地图">图</button>
-                <button class="dir-btn" data-cmd="东" title="东">→</button>
-            </div>
-            <div class="dir-row">
-                <button class="dir-btn" data-cmd="西南" title="西南">↙</button>
-                <button class="dir-btn" data-cmd="南" title="南">↓</button>
-                <button class="dir-btn" data-cmd="东南" title="东南">↘</button>
-            </div>
-            <div class="dir-row dir-vertical">
-                <button class="dir-btn" data-cmd="上" title="上">上</button>
-                <button class="dir-btn" data-cmd="下" title="下">下</button>
-            </div>
-        </div>
-
-        <div id="quick-actions">
-            <button class="action-btn" data-cmd="看">👁 观察</button>
-            <button class="action-btn" data-cmd="背包">🎒 背包</button>
-            <button class="action-btn" data-cmd="地图">🗺 地图</button>
-            <button class="action-btn" data-cmd="地图 区域">🔍 区域</button>
-            <button class="action-btn" data-cmd="地图 本地">📍 本地</button>
-        </div>
-    </div>
-
 </div>
 
-<div id="help-bar">
-    <span>点击方向按钮移动 | 键盘方向键 ↑↓←→ | 快捷指令：L看 I背包 M地图</span>
-</div>
-
-<!-- 自定义交互 JS -->
-<script src="{% static 'webclient/js/webclient.js' %}" language="javascript" type="text/javascript"></script>
+<!-- 自定义交互 JS (原生 WebSocket 版本) -->
+<script src="{% static 'webclient/js/webclient.js' %}"></script>
 </body>
 </html>
