@@ -3,7 +3,9 @@
 <html dir="ltr" lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>扬 州 古 城 · 盛 唐 风 华</title>
     <meta name="author" content="Evennia" />
     
@@ -12,13 +14,47 @@
 
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏯</text></svg>">
 
-    <!-- WebSocket 配置 -->
+    <!-- Evennia WebSocket 全局变量配置 -->
     <script type="text/javascript">
-        // Evennia WebSocket 配置
-        var ws_port = "{{ websocket_port }}";
-        var ws_host = window.location.hostname;
-        var ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
-        var ws_url = ws_scheme + "://" + ws_host + ":" + ws_port + "/webclient/ws/";
+        function generateUID() {
+            return Math.random().toString(36).substring(2, 15) +
+                Math.random().toString(36).substring(2, 15);
+        }
+
+        // 浏览器类型检测（与 evennia.js 一致）
+        var browser = (function (agent) {
+            switch (true) {
+                case agent.indexOf("edge") > -1: return "edge";
+                case agent.indexOf("edg") > -1: return "chromium based edge (dev or canary)";
+                case agent.indexOf("opr") > -1 && !!window.opr: return "opera";
+                case agent.indexOf("chrome") > -1 && !!window.chrome: return "chrome";
+                case agent.indexOf("trident") > -1: return "ie";
+                case agent.indexOf("firefox") > -1: return "firefox";
+                case agent.indexOf("safari") > -1: return "safari";
+                default: return "other";
+            }
+        })(window.navigator.userAgent.toLowerCase());
+
+        {% if browser_sessid %}
+           var csessid = "{{ browser_sessid }}";
+        {% else %}
+           var csessid = "false";
+        {% endif %}
+
+        var cuid = generateUID();
+
+        // 复刻 evennia.js 的 wsurl 构建
+        {% if websocket_url %}
+            var wsurl = "{{ websocket_url }}";
+        {% else %}
+            var ws_host = window.location.hostname;
+            var ws_port = "{{ websocket_port }}";
+            var ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
+            var wsurl = ws_scheme + "://" + ws_host + ":" + ws_port + "/webclient/ws/";
+        {% endif %}
+
+        // 完整 WebSocket URL: wsurl + ? + csessid + & + cuid + & + browser
+        var ws_query_url = wsurl + "?" + csessid + "&" + cuid + "&" + browser;
     </script>
 </head>
 <body>
@@ -26,25 +62,24 @@
 <!-- 主容器 -->
 <div id="app">
 
-    <!-- ==================== 顶部聊天屏 ==================== -->
+    <!-- 顶部聊天屏 -->
     <div id="chat-panel">
         <div id="chat-header">
-            <span class="title">扬 州 古 城 · 盛 唐 风 华</span>
-            <span class="connection-status" id="conn-status">● 连接中...</span>
+            <span class="title">🏯 扬州古城</span>
+            <span class="connection-status connecting" id="conn-status">● 连接中...</span>
         </div>
         <div id="chat-messages"></div>
         <div id="chat-input-bar">
             <span class="prompt">&gt;</span>
-            <input type="text" id="chat-input" placeholder="输入指令或聊天内容..." autocomplete="off">
+            <input type="text" id="chat-input" placeholder="输入指令或聊天内容..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
             <button id="send-btn" title="发送">发送</button>
         </div>
     </div>
 
-    <!-- ==================== 下方容器 (侧边栏 + 主区域) ==================== -->
+    <!-- 下方主体 -->
     <div id="bottom-container">
-        
-        <!-- 左侧面板 (桌面端) / 底部面板 (移动端) -->
-        <div id="side-panel">
+        <!-- 左侧面板 -->
+        <aside id="side-panel">
             <div class="side-section">
                 <div class="side-title">👤 玩家</div>
                 <div id="player-list" class="side-list">
@@ -74,32 +109,32 @@
                 </div>
                 <div class="status-item">
                     <span class="status-label">位置</span>
-                    <span class="status-value" id="status-coords">--</span>
+                    <span class="status-value" id="status-coords">扬州</span>
                 </div>
             </div>
-        </div>
+        </aside>
 
         <!-- 中间主区域 -->
-        <div id="main-area">
+        <main id="main-area">
             <div id="room-info">
                 <div id="room-name">扬州城中心</div>
-                <div id="room-desc">正在加载世界...</div>
+                <div id="room-desc">正在连接服务器...</div>
             </div>
 
             <div id="direction-pad">
                 <div class="dir-row">
                     <button class="dir-btn" data-cmd="西北" title="西北">↖</button>
-                    <button class="dir-btn" data-cmd="北" title="北">↑</button>
+                    <button class="dir-btn" data-cmd="北" title="北">北</button>
                     <button class="dir-btn" data-cmd="东北" title="东北">↗</button>
                 </div>
                 <div class="dir-row">
-                    <button class="dir-btn" data-cmd="西" title="西">←</button>
+                    <button class="dir-btn" data-cmd="西" title="西">西</button>
                     <button class="dir-btn dir-center" data-cmd="地图" title="查看地图">图</button>
-                    <button class="dir-btn" data-cmd="东" title="东">→</button>
+                    <button class="dir-btn" data-cmd="东" title="东">东</button>
                 </div>
                 <div class="dir-row">
                     <button class="dir-btn" data-cmd="西南" title="西南">↙</button>
-                    <button class="dir-btn" data-cmd="南" title="南">↓</button>
+                    <button class="dir-btn" data-cmd="南" title="南">南</button>
                     <button class="dir-btn" data-cmd="东南" title="东南">↘</button>
                 </div>
                 <div class="dir-row dir-vertical">
@@ -115,11 +150,11 @@
                 <button class="action-btn" data-cmd="地图 区域">🔍 区域</button>
                 <button class="action-btn" data-cmd="地图 本地">📍 本地</button>
             </div>
-        </div>
+        </main>
     </div>
 </div>
 
-<!-- 自定义交互 JS (原生 WebSocket 版本) -->
+<!-- 原生 WebSocket JS -->
 <script src="{% static 'webclient/js/webclient.js' %}"></script>
 </body>
 </html>
