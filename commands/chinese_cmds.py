@@ -22,12 +22,36 @@
 
 from evennia.commands.command import Command
 from evennia import default_cmds
+from evennia.utils import search
 import random
 
 
 # =============================================================================
 # 基础命令基类
 # =============================================================================
+
+# 方向关键词到出口关键字的映射
+DIRECTION_MAP = {
+    "东": "east", "east": "east", "e": "east",
+    "西": "west", "west": "west", "w": "west",
+    "南": "south", "south": "south", "s": "south",
+    "北": "north", "north": "north", "n": "north",
+    "东北": "northeast", "northeast": "northeast", "ne": "northeast",
+    "西北": "northwest", "northwest": "northwest", "nw": "northwest",
+    "东南": "southeast", "southeast": "southeast", "se": "southeast",
+    "西南": "southwest", "southwest": "southwest", "sw": "southwest",
+    "上": "up", "up": "up", "u": "up",
+    "下": "down", "down": "down", "d": "down",
+}
+
+# 方向中文名
+DIRECTION_CN = {
+    "east": "东", "west": "西", "south": "南", "north": "北",
+    "northeast": "东北", "northwest": "西北",
+    "southeast": "东南", "southwest": "西南",
+    "up": "上", "down": "下",
+}
+
 
 class ChineseCommand(Command):
     """中文指令基类"""
@@ -40,102 +64,144 @@ class ChineseCommand(Command):
             return None
         return self.caller.search(target_str, location=self.caller.location, quiet=True)
 
+    def _find_exit(self, direction):
+        """
+        在当前房间查找指定方向的出口。
+        返回找到的出口对象，或 None。
+        """
+        # 按方向英文名查找出口
+        exits = self.caller.location.exits
+        for ex in exits:
+            # 检查出口的 key 或 aliases 是否匹配
+            exit_key = ex.key.lower()
+            exit_aliases = [a.lower() for a in ex.aliases.all()]
+            if exit_key == direction or direction in exit_aliases:
+                return ex
+        return None
+
+    def _move(self, direction):
+        """
+        尝试向指定方向移动。
+        direction 是英文方向名（如 'east', 'north'）。
+        成功返回 True，失败返回 False。
+        """
+        exit_obj = self._find_exit(direction)
+        if exit_obj:
+            # 直接调用出口的遍历方法
+            self.caller.move_to(exit_obj.destination)
+            return True
+        else:
+            dir_cn = DIRECTION_CN.get(direction, direction)
+            self.caller.msg(f"那个方向没有路，你无法往{dir_cn}走。")
+            return False
+
 
 # =============================================================================
 # 一、移动指令
 # =============================================================================
 
 class CmdEast(ChineseCommand):
+    """向东走"""
     __doc__ = "向东走"
     key = "东"
     aliases = ["east", "e", "向东", "往东"]
 
     def func(self):
-        self.caller.execute_cmd("east")
+        self._move("east")
 
 
 class CmdWest(ChineseCommand):
+    """向西走"""
     __doc__ = "向西走"
     key = "西"
     aliases = ["west", "w", "向西", "往西"]
 
     def func(self):
-        self.caller.execute_cmd("west")
+        self._move("west")
 
 
 class CmdSouth(ChineseCommand):
+    """向南走"""
     __doc__ = "向南走"
     key = "南"
     aliases = ["south", "s", "向南", "往南"]
 
     def func(self):
-        self.caller.execute_cmd("south")
+        self._move("south")
 
 
 class CmdNorth(ChineseCommand):
+    """向北走"""
     __doc__ = "向北走"
     key = "北"
     aliases = ["north", "n", "向北", "往北"]
 
     def func(self):
-        self.caller.execute_cmd("north")
+        self._move("north")
 
 
 class CmdNortheast(ChineseCommand):
+    """向东北走"""
     __doc__ = "向东北走"
     key = "东北"
     aliases = ["northeast", "ne"]
 
     def func(self):
-        self.caller.execute_cmd("northeast")
+        self._move("northeast")
 
 
 class CmdNorthwest(ChineseCommand):
+    """向西北走"""
     __doc__ = "向西北走"
     key = "西北"
     aliases = ["northwest", "nw"]
 
     def func(self):
-        self.caller.execute_cmd("northwest")
+        self._move("northwest")
 
 
 class CmdSoutheast(ChineseCommand):
+    """向东南走"""
     __doc__ = "向东南走"
     key = "东南"
     aliases = ["southeast", "se"]
 
     def func(self):
-        self.caller.execute_cmd("southeast")
+        self._move("southeast")
 
 
 class CmdSouthwest(ChineseCommand):
+    """向西南走"""
     __doc__ = "向西南走"
     key = "西南"
     aliases = ["southwest", "sw"]
 
     def func(self):
-        self.caller.execute_cmd("southwest")
+        self._move("southwest")
 
 
 class CmdUp(ChineseCommand):
+    """向上走"""
     __doc__ = "向上走"
     key = "上"
     aliases = ["up", "u", "向上"]
 
     def func(self):
-        self.caller.execute_cmd("up")
+        self._move("up")
 
 
 class CmdDown(ChineseCommand):
+    """向下走"""
     __doc__ = "向下走"
     key = "下"
     aliases = ["down", "d", "向下"]
 
     def func(self):
-        self.caller.execute_cmd("down")
+        self._move("down")
 
 
 class CmdEnter(ChineseCommand):
+    """进入某处"""
     __doc__ = "进入某处"
     key = "进入"
     aliases = ["enter", "进", "进去"]
@@ -148,7 +214,8 @@ class CmdEnter(ChineseCommand):
 
 
 class CmdExit(ChineseCommand):
-    __doc__ = "离开某处"
+    """离开"""
+    __doc__ = "离开当前所在"
     key = "离开"
     aliases = ["exit", "出", "出去"]
 
