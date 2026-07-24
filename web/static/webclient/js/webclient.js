@@ -1,82 +1,71 @@
 /* ============================================================
    扬州古城 · 盛唐风华 — WebClient JavaScript
-   功能：WebSocket通信、消息解析、点击移动、面板更新
+   使用 Evennia 的 evennia.js 库进行 WebSocket 通信
+   功能：三栏布局、点击移动、消息解析、面板更新
    ============================================================ */
 
-(function() {
+$(document).ready(function() {
     'use strict';
 
     // ============ DOM 引用 ============
-    const chatMessages   = document.getElementById('chat-messages');
-    const chatInput      = document.getElementById('chat-input');
-    const sendBtn        = document.getElementById('send-btn');
-    const connStatus     = document.getElementById('conn-status');
-    const roomNameEl     = document.getElementById('room-name');
-    const roomDescEl     = document.getElementById('room-desc');
-    const playerListEl   = document.getElementById('player-list');
-    const charListEl     = document.getElementById('char-list');
-    const itemListEl     = document.getElementById('item-list');
-    const statusRoomEl   = document.getElementById('status-room');
-    const statusCoordsEl = document.getElementById('status-coords');
+    var chatMessages   = document.getElementById('chat-messages');
+    var chatInput      = document.getElementById('chat-input');
+    var sendBtn        = document.getElementById('send-btn');
+    var connStatus     = document.getElementById('conn-status');
+    var roomNameEl     = document.getElementById('room-name');
+    var roomDescEl     = document.getElementById('room-desc');
+    var playerListEl   = document.getElementById('player-list');
+    var charListEl     = document.getElementById('char-list');
+    var itemListEl     = document.getElementById('item-list');
+    var statusRoomEl   = document.getElementById('status-room');
+    var statusCoordsEl = document.getElementById('status-coords');
 
     // ============ 状态 ============
-    let ws = null;
-    let reconnectTimer = null;
-    let reconnectDelay = 2000;
-    let currentRoomName = '扬州城中心';
-    let currentRoomDesc = '';
-    let players = [];
-    let characters = [];
-    let items = [];
-    let messageBuffer = '';
-    let isConnected = false;
+    var currentRoomName = '';
+    var currentRoomDesc = '';
+    var messageBuffer = '';
+    var initialized = false;
 
-    // ============ WebSocket 连接 ============
-    function connect() {
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const wsUrl = protocol + '//' + window.location.host + '/webclient/ws';
-
-        setStatus('connecting', '● 连接中...');
-
-        try {
-            ws = new WebSocket(wsUrl);
-        } catch (e) {
-            setStatus('disconnected', '● 连接失败');
-            scheduleReconnect();
+    // ============ 初始化 Evennia 连接 ============
+    function initConnection() {
+        if (typeof Evennia === 'undefined') {
+            setStatus('disconnected', '● Evennia.js 未加载');
             return;
         }
 
-        ws.onopen = function() {
-            isConnected = true;
+        // 初始化 Evennia 通信
+        Evennia.init({
+            connection: Evennia.WebsocketConnection
+        });
+
+        // 监听文本消息
+        Evennia.emitter.on('text', function(args, kwargs) {
+            if (args && args.length >= 2) {
+                handleTextMessage(args[1].text || '');
+            }
+        });
+
+        // 监听连接状态
+        Evennia.emitter.on('connection_open', function() {
             setStatus('connected', '● 已连接');
-            reconnectDelay = 2000;
             addChatMsg('system', '── 欢迎来到扬州古城 · 盛唐风华 ──');
             addChatMsg('system', '点击方向按钮移动，或输入中文指令。');
-        };
+        });
 
-        ws.onmessage = function(event) {
-            handleMessage(event.data);
-        };
-
-        ws.onclose = function() {
-            isConnected = false;
+        Evennia.emitter.on('connection_close', function() {
             setStatus('disconnected', '● 已断开');
-            scheduleReconnect();
-        };
+        });
 
-        ws.onerror = function() {
+        Evennia.emitter.on('connection_error', function() {
             setStatus('disconnected', '● 连接出错');
-        };
-    }
+        });
 
-    function scheduleReconnect() {
-        if (reconnectTimer) return;
-        setStatus('connecting', '● ' + (reconnectDelay / 1000) + '秒后重连...');
-        reconnectTimer = setTimeout(function() {
-            reconnectTimer = null;
-            reconnectDelay = Math.min(reconnectDelay * 1.5, 30000);
-            connect();
-        }, reconnectDelay);
+        // 监听提示符
+        Evennia.emitter.on('prompt', function(args, kwargs) {
+            // 提示符，可用于检测命令完成
+        });
+
+        initialized = true;
     }
 
     function setStatus(cls, text) {
@@ -85,155 +74,99 @@
     }
 
     // ============ 消息处理 ============
-    function handleMessage(rawData) {
-        // Evennia 发送 JSON 数组
-        let data;
-        try {
-            data = JSON.parse(rawData);
-        } catch (e) {
-            return;
-        }
-
-        if (!Array.isArray(data)) return;
-
-        const msgType = data[0];
-        const payload = data[1] || {};
-
-        switch (msgType) {
-            case 'text':
-                handleTextMessage(payload.text || '');
-                break;
-            case 'prompt':
-                // 提示符，忽略
-                break;
-            case 'url':
-                // URL 消息
-                if (payload.url) {
-                    addChatMsg('url', '[链接] ' + payload.url);
-                }
-                break;
-            default:
-                break;
-        }
-    }
-
     function handleTextMessage(text) {
         // 去除 ANSI 转义码
-        const cleanText = stripAnsi(text);
+        var cleanText = stripAnsi(text);
 
         // 累积到缓冲区
         messageBuffer += cleanText;
 
-        // 检查是否收到完整的房间描述或其他内容
-        // 用换行分割
-        const lines = messageBuffer.split('\n');
+        // 按换行分割处理
+        var lines = messageBuffer.split('\n');
+        messageBuffer = '';
 
-        // 如果最后一行不完整（没有结束标记），保留在缓冲区
-        // 否则全部处理
-        if (lines.length > 1 || messageBuffer.length > 200) {
-            // 处理每一行
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i].trim();
-                if (line) {
-                    processLine(line);
-                }
+        for (var i = 0; i < lines.length; i++) {
+            var line = lines[i].trim();
+            if (line) {
+                processLine(line);
             }
-            messageBuffer = '';
         }
     }
 
     function processLine(line) {
-        // 添加到聊天屏
         addChatMsg('normal', line);
-
-        // 尝试解析房间信息
-        // 房间名通常以一些特殊标记开头或包含特定关键词
         parseRoomInfo(line);
-        parseExits(line);
-        parseContents(line);
     }
 
     function parseRoomInfo(line) {
-        // 房间名通常单独一行，包含城门、城、府、寺、院、楼、驿、渡、湖、园等
-        const roomPatterns = [
-            /^(.{2,20}(?:城|门|府|寺|院|楼|驿|渡|湖|园|市|码头|之上|之路|之滨|馆|堂|阁|亭|坛|庙|观|庵|殿|宫|坊|铺|店|村|镇|寨|庄|关|口|道|径|路|街|巷|弄|桥|洞|穴|谷|峰|岭|山|坡|岸|滩|岛|洲|海|江|河|运河|运河之上))$/,
+        // 匹配房间名
+        var roomPatterns = [
+            /^(.{2,30}(?:城|门|府|寺|院|楼|驿|渡|湖|园|市|码头|之上|之路|之滨|馆|堂|阁|亭|坛|庙|观|庵|殿|宫|坊|铺|店|村|镇|寨|庄|关|口|道|径|路|街|巷|弄|桥|洞|穴|谷|峰|岭|山|坡|岸|滩|岛|洲|海|江|河))$/,
+            /^(.{2,30}(?:运河|运河之上))$/,
         ];
 
-        for (const pattern of roomPatterns) {
-            const match = line.match(pattern);
-            if (match) {
-                const name = match[1];
-                if (name.length >= 2 && name.length <= 30) {
-                    currentRoomName = name;
-                    roomNameEl.textContent = name;
-                    statusRoomEl.textContent = name;
-                    // 发送看命令获取完整描述
-                    // (不在这里发送，避免循环)
-                }
+        for (var p = 0; p < roomPatterns.length; p++) {
+            var match = line.match(roomPatterns[p]);
+            if (match && match[1].length >= 2 && match[1].length <= 30) {
+                currentRoomName = match[1];
+                roomNameEl.textContent = currentRoomName;
+                statusRoomEl.textContent = currentRoomName;
+                currentRoomDesc = '';
+                return;
             }
         }
-    }
 
-    function parseExits(line) {
-        // 解析出口信息: "东边是..." "北去..." "西边通往..."
-        // 这主要用于更新方向按钮的可用性
-    }
-
-    function parseContents(line) {
-        // 解析房间内的玩家和物品
-        // Evennia 通常不直接发送列表，需要通过 "看" 命令获取
+        // 累积房间描述
+        if (currentRoomName && (
+            line.indexOf('你站在') !== -1 ||
+            line.indexOf('这里是') !== -1 ||
+            line.indexOf('东边') !== -1 ||
+            line.indexOf('西边') !== -1 ||
+            line.indexOf('南边') !== -1 ||
+            line.indexOf('北边') !== -1 ||
+            line.indexOf('东去') !== -1 ||
+            line.indexOf('西去') !== -1 ||
+            line.indexOf('南去') !== -1 ||
+            line.indexOf('北去') !== -1 ||
+            line.indexOf('东门') !== -1 ||
+            line.indexOf('西门') !== -1 ||
+            line.indexOf('南门') !== -1 ||
+            line.indexOf('北门') !== -1 ||
+            line.indexOf('东面') !== -1 ||
+            line.indexOf('西面') !== -1 ||
+            line.indexOf('南面') !== -1 ||
+            line.indexOf('北面') !== -1
+        )) {
+            if (currentRoomDesc) currentRoomDesc += '\n';
+            currentRoomDesc += line;
+            roomDescEl.textContent = currentRoomDesc;
+        }
     }
 
     // ============ ANSI 转义码去除 ============
     function stripAnsi(text) {
-        // 去除 ANSI 颜色码
         return text.replace(/\x1b\[[0-9;]*m/g, '')
-                   .replace(/\x1b\]0;.*?\x07/g, '')  // 终端标题
+                   .replace(/\x1b\]0;.*?\x07/g, '')
                    .replace(/\r/g, '');
     }
 
     // ============ 聊天消息 ============
     function addChatMsg(type, text) {
-        const div = document.createElement('div');
+        var div = document.createElement('div');
         div.className = 'msg-line msg-' + type;
-
-        // 转义 HTML
-        const escaped = escapeHtml(text);
-        div.innerHTML = ansiToHtml(escaped);
-
+        div.textContent = text;
         chatMessages.appendChild(div);
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
-    function escapeHtml(text) {
-        const map = {
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            "'": '&#039;'
-        };
-        return text.replace(/[&<>"']/g, function(ch) { return map[ch]; });
-    }
-
-    // 将 ANSI 颜色码转换为 HTML span
-    function ansiToHtml(text) {
-        // 这里处理的是已经去除 ANSI 码的纯文本
-        // 如果有需要可以保留颜色
-        return text;
-    }
-
     // ============ 发送指令 ============
     function sendCommand(cmd) {
-        if (!isConnected || !ws || ws.readyState !== WebSocket.OPEN) {
-            addChatMsg('system', '未连接到服务器。');
+        if (!initialized) {
+            addChatMsg('system', '尚未连接到服务器。');
             return;
         }
 
-        const data = JSON.stringify(['text', { text: cmd + '\n' }]);
-        ws.send(data);
-
-        // 在聊天区显示发送的指令
+        Evennia.msg('text', ['text', { text: cmd + '\n' }]);
         addChatMsg('sent', '> ' + cmd);
     }
 
@@ -253,7 +186,7 @@
     });
 
     function sendInput() {
-        const text = chatInput.value.trim();
+        var text = chatInput.value.trim();
         if (!text) return;
         sendCommand(text);
         chatInput.value = '';
@@ -262,7 +195,7 @@
     // 方向按钮点击
     document.querySelectorAll('.dir-btn').forEach(function(btn) {
         btn.addEventListener('click', function() {
-            const cmd = this.getAttribute('data-cmd');
+            var cmd = this.getAttribute('data-cmd');
             if (cmd) {
                 sendCommand(cmd);
             }
@@ -272,7 +205,7 @@
     // 快速操作按钮
     document.querySelectorAll('.action-btn').forEach(function(btn) {
         btn.addEventListener('click', function() {
-            const cmd = this.getAttribute('data-cmd');
+            var cmd = this.getAttribute('data-cmd');
             if (cmd) {
                 sendCommand(cmd);
             }
@@ -281,7 +214,6 @@
 
     // 键盘快捷键
     document.addEventListener('keydown', function(e) {
-        // 如果焦点在输入框，不处理快捷键
         if (document.activeElement === chatInput) return;
 
         switch (e.key) {
@@ -307,104 +239,16 @@
         }
     });
 
-    // 点击消息区域，自动聚焦输入框
+    // 点击消息区域聚焦输入框
     chatMessages.addEventListener('click', function() {
         chatInput.focus();
     });
 
-    // ============ 监听房间变化并更新面板 ============
-    // 通过劫持消息来解析房间内容
-    const originalProcessLine = processLine;
-    processLine = function(line) {
-        originalProcessLine(line);
-
-        // 解析房间描述（多行文本，包含出口信息）
-        if (line.includes('你站在') || line.includes('这里是') || line.includes('东边') ||
-            line.includes('西边') || line.includes('南边') || line.includes('北边') ||
-            line.includes('东去') || line.includes('西去') || line.includes('南去') || line.includes('北去') ||
-            line.includes('东门') || line.includes('西门') || line.includes('南门') || line.includes('北门')) {
-
-            // 累积房间描述
-            if (currentRoomDesc && !currentRoomDesc.endsWith('\n')) {
-                currentRoomDesc += '\n';
-            }
-            currentRoomDesc += line;
-            roomDescEl.textContent = currentRoomDesc;
-        }
-
-        // 检测是否有玩家/人物/物品信息
-        // 这些通常由 "看" 命令返回
-        if (line.startsWith('这里') && line.includes('有')) {
-            // "这里有 xxx" - 物品
-            updateItemList(line);
-        }
-    };
-
-    function updateItemList(line) {
-        // 简单解析物品
-        const match = line.match(/这里有[：:]?\s*(.+)/);
-        if (match) {
-            const content = match[1];
-            const parts = content.split(/[，,]/);
-            const newItems = parts.map(function(p) {
-                return p.trim().replace(/[。.]$/, '');
-            }).filter(function(p) { return p.length > 0; });
-
-            items = newItems;
-            renderSideList(itemListEl, items, '📦');
-        }
-    }
-
-    function renderSideList(el, list, icon) {
-        el.innerHTML = '';
-        if (list.length === 0) {
-            const empty = document.createElement('div');
-            empty.className = 'side-empty';
-            empty.textContent = '暂无';
-            el.appendChild(empty);
-        } else {
-            list.forEach(function(item) {
-                const div = document.createElement('div');
-                div.className = 'side-item';
-                div.innerHTML = '<span class="icon">' + icon + '</span>' + escapeHtml(item);
-                div.title = '点击交互: ' + item;
-                div.addEventListener('click', function() {
-                    // 点击物品/人物时发送交互命令
-                    chatInput.value = '看 ' + item;
-                    chatInput.focus();
-                });
-                el.appendChild(div);
-            });
-        }
-    }
-
-    // ============ 定期刷新房间信息 ============
-    // 每次移动后自动 "看" 一下
-    let lastAutoLook = 0;
-    function autoLook() {
-        const now = Date.now();
-        if (now - lastAutoLook > 500 && isConnected) {
-            lastAutoLook = now;
-            // 不自动发送 "看"，避免干扰
-            // 用户在移动后会自然收到房间描述
-        }
-    }
-
-    // ============ 初始化 ============
-    function init() {
-        connect();
+    // ============ 启动 ============
+    function start() {
+        initConnection();
         chatInput.focus();
-
-        // 保持连接活跃
-        setInterval(function() {
-            if (isConnected && ws && ws.readyState === WebSocket.OPEN) {
-                // 发送心跳（空命令）
-                // ws.send(JSON.stringify(['text', { text: '\n' }]));
-            }
-        }, 30000);
     }
 
-    // 启动
-    init();
-
-})();
+    start();
+});
