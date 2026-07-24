@@ -15,6 +15,7 @@ own cmdsets by inheriting from them or directly from `evennia.CmdSet`.
 """
 
 from evennia import default_cmds
+from commands.chinese_cmds import ChineseCmdSet
 
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
@@ -32,8 +33,9 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         """
         super().at_cmdset_creation()
         #
-        # any commands you add below will overload the default ones.
+        # 添加中文指令集
         #
+        self.add(ChineseCmdSet())
 
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
