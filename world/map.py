@@ -13,7 +13,7 @@
 """
 
 import re
-from evennia.utils import search
+from evennia.objects.models import ObjectDB
 
 
 # 房间分类符号
@@ -50,7 +50,7 @@ WORLD_CATEGORIES = {"都城", "州城", "县城", "村镇", "渡口", "山岳", 
 def get_all_rooms():
     """获取所有带有 map_x 属性的房间。"""
     try:
-        rooms = search.search_object("", typeclass="typeclasses.rooms.Room")
+        rooms = ObjectDB.objects.filter(db_typeclass_path__icontains='room')
     except Exception:
         rooms = []
     result = []
