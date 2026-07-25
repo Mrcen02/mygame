@@ -27,21 +27,66 @@
     var currentRoomName = '';
     var currentRoomDesc = '';
     var initialized = false;
+    var retryCount = 0;
+    var MAX_RETRIES = 10;
+
+    // ============ WebSocket URL 构建 ============
+
+    // 尝试多个可能的 WebSocket URL
+    var candidateUrls = [];
+
+    // 1. 如果 evennia 模板变量提供了 wsurl
+    if (typeof wsurl !== 'undefined' && wsurl) {
+        candidateUrls.push(wsurl + '?' + csessid + '&' + cuid + '&' + browser);
+    }
+
+    // 2. 如果模板提供了 ws_query_url
+    if (typeof ws_query_url !== 'undefined' && ws_query_url) {
+        candidateUrls.push(ws_query_url);
+    }
+
+    // 3. 自动检测：从当前页面 URL 推断
+    var pageHost = window.location.hostname || 'localhost';
+    var pagePort = window.location.port || (window.location.protocol === 'https:' ? '443' : '80');
+    var pageScheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
+
+    // 尝试 Evennia 默认端口 4002
+    candidateUrls.push(pageScheme + '://' + pageHost + ':4002/webclient/ws/?' + csessid + '&' + cuid + '&' + browser);
+
+    // 尝试与页面同端口
+    if (pagePort !== '4002') {
+        candidateUrls.push(pageScheme + '://' + pageHost + ':' + pagePort + '/webclient/ws/?' + csessid + '&' + cuid + '&' + browser);
+    }
+
+    // 去重
+    candidateUrls = candidateUrls.filter(function(url, idx, arr) {
+        return arr.indexOf(url) === idx;
+    });
+
+    var currentUrlIndex = 0;
 
     // ============ WebSocket 连接 ============
-    
+
     function connectWebSocket() {
         if (isConnecting || (ws && ws.readyState !== WebSocket.CLOSED)) {
             return;
         }
-        
+
+        if (retryCount >= MAX_RETRIES) {
+            setStatus('disconnected', '● 无法连接');
+            addChatMsg('system', '多次尝试连接失败，请确认 Evennia 服务已启动。');
+            addChatMsg('system', '运行: evennia start');
+            return;
+        }
+
         isConnecting = true;
         setStatus('connecting', '● 连接中...');
-        console.log('[WebSocket] 连接到:', ws_query_url);
-        
+
+        var url = candidateUrls[currentUrlIndex];
+        console.log('[WebSocket] 尝试连接 (' + (currentUrlIndex + 1) + '/' + candidateUrls.length + '):', url);
+
         try {
-            // 复刻 evennia.js：使用 subprotocol "v1.evennia.com"
-            ws = new WebSocket(ws_query_url, ['v1.evennia.com']);
+            ws = new WebSocket(url, ['v1.evennia.com']);
         } catch (e) {
             console.error('[WebSocket] 创建失败:', e);
             setStatus('disconnected', '● 不支持 WebSocket');
@@ -53,10 +98,12 @@
             isConnecting = false;
             everOpen = true;
             initialized = true;
+            retryCount = 0;
             clearTimeout(reconnectTimer);
             setStatus('connected', '● 已连接');
             addChatMsg('system', '── 欢迎来到扬州古城 · 盛唐风华 ──');
             addChatMsg('system', '点击方向按钮移动，或输入中文指令。');
+            console.log('[WebSocket] 连接成功:', url);
         };
 
         ws.onmessage = function(event) {
@@ -66,21 +113,30 @@
         ws.onclose = function(event) {
             isConnecting = false;
             setStatus('disconnected', '● 已断开');
-            
+
             if (everOpen) {
                 addChatMsg('system', '连接已断开，正在重连...');
+                retryCount++;
                 scheduleReconnect();
             } else {
-                // 如果从来没有成功打开过，可能是地址或配置问题
-                console.error('[WebSocket] 连接从未打开过，code:', event.code);
-                addChatMsg('system', '无法连接服务器 (code:' + event.code + ')，3秒后重试...');
-                scheduleReconnect();
+                // 从未成功打开，尝试下一个 URL
+                currentUrlIndex++;
+                retryCount++;
+                if (currentUrlIndex < candidateUrls.length) {
+                    console.log('[WebSocket] 当前 URL 失败，尝试下一个...');
+                    setTimeout(connectWebSocket, 1000);
+                } else {
+                    console.error('[WebSocket] 所有 URL 都失败了, code:', event.code);
+                    addChatMsg('system', '无法连接服务器 (code:' + event.code + ')');
+                    addChatMsg('system', '请确认 Evennia 服务已启动: evennia start');
+                    retryCount++;
+                    scheduleReconnect();
+                }
             }
         };
 
         ws.onerror = function(error) {
             console.error('[WebSocket] 错误:', error);
-            // onclose 会在 onerror 后触发
         };
     }
 
@@ -91,16 +147,14 @@
         reconnectTimer = setTimeout(function() {
             console.log('[WebSocket] 尝试重连...');
             connectWebSocket();
-        }, 3000);
+        }, 5000);
     }
 
     function disconnectWebSocket() {
         if (ws) {
             try {
                 ws.send(JSON.stringify(['websocket_close', [], {}]));
-            } catch (e) {
-                // ignore
-            }
+            } catch (e) {}
             ws.close();
             ws = null;
         }
@@ -117,7 +171,6 @@
         }
 
         // Evennia 协议: ["text", args, kwargs]
-        // args 是数组，kwargs 是对象
         var message = JSON.stringify(['text', [cmd + '\n'], {}]);
         ws.send(message);
         addChatMsg('sent', '> ' + cmd);
@@ -126,14 +179,12 @@
     function handleServerMessage(data) {
         try {
             var parsed = JSON.parse(data);
-            
-            // Evennia 返回格式: [cmdname, args, kwargs]
-            // 文本消息: ["text", [text], kwargs]
+
             if (Array.isArray(parsed)) {
                 var cmdname = parsed[0];
                 var args = parsed[1] || [];
                 var kwargs = parsed[2] || {};
-                
+
                 if (cmdname === 'text' && args.length > 0) {
                     handleTextMessage(String(args[0]));
                 }
@@ -163,11 +214,9 @@
     function processLine(line) {
         addChatMsg('normal', line);
         parseRoomInfo(line);
-        parseObjects(line);
     }
 
     function parseRoomInfo(line) {
-        // 匹配 "你来到了 XXXX" 或单独的房间名
         var comeMatch = line.match(/你来到了\s*(.{2,30})\s*[。！.!]?\s*$/);
         if (comeMatch) {
             currentRoomName = comeMatch[1].trim();
@@ -189,7 +238,6 @@
             }
         }
 
-        // 累积房间描述
         if (currentRoomName && (
             line.indexOf('你站在') !== -1 ||
             line.indexOf('这里是') !== -1 ||
@@ -215,17 +263,6 @@
         statusRoomEl.textContent = currentRoomName;
     }
 
-    function parseObjects(line) {
-        // 简单解析房间内的人物/物品
-        // 例如 "[|cR店小二|n]" 等 Evennia 格式
-        var clean = stripAnsi(line);
-        
-        if (clean.indexOf('这里 obvious_exits_key') !== -1 || clean.indexOf('出口') !== -1) {
-            // 出口信息，忽略
-            return;
-        }
-    }
-
     // ============ 工具函数 ============
 
     function stripAnsi(text) {
@@ -246,8 +283,7 @@
         div.textContent = text;
         chatMessages.appendChild(div);
         chatMessages.scrollTop = chatMessages.scrollHeight;
-        
-        // 限制消息数量，防止内存泄漏
+
         while (chatMessages.children.length > 500) {
             chatMessages.removeChild(chatMessages.firstChild);
         }
@@ -320,6 +356,12 @@
 
     // ============ 启动 ============
     function start() {
+        // 显示调试信息
+        console.log('[WebSocket] 候选 URL:');
+        candidateUrls.forEach(function(url, i) {
+            console.log('  ' + (i + 1) + '. ' + url);
+        });
+        addChatMsg('system', '正在连接服务器...');
         connectWebSocket();
         chatInput.focus();
     }
