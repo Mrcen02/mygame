@@ -8,24 +8,19 @@
     <meta name="mobile-web-app-capable" content="yes">
     <title>扬 州 古 城 · 盛 唐 风 华</title>
     <meta name="author" content="Evennia" />
-    
-    <!-- 自定义 CSS -->
-    <link rel="stylesheet" href="{% static 'webclient/css/webclient.css' %}">
 
+    <link rel="stylesheet" href="{% static 'webclient/css/webclient.css' %}">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏯</text></svg>">
 
-    <!-- Evennia WebSocket 全局变量配置 -->
     <script type="text/javascript">
         function generateUID() {
             return Math.random().toString(36).substring(2, 15) +
                 Math.random().toString(36).substring(2, 15);
         }
-
-        // 浏览器类型检测（与 evennia.js 一致）
         var browser = (function (agent) {
             switch (true) {
                 case agent.indexOf("edge") > -1: return "edge";
-                case agent.indexOf("edg") > -1: return "chromium based edge (dev or canary)";
+                case agent.indexOf("edg") > -1: return "chromium based edge";
                 case agent.indexOf("opr") > -1 && !!window.opr: return "opera";
                 case agent.indexOf("chrome") > -1 && !!window.chrome: return "chrome";
                 case agent.indexOf("trident") > -1: return "ie";
@@ -42,23 +37,66 @@
         {% endif %}
 
         var cuid = generateUID();
-
-        // 复刻 evennia.js base.html 的 wsurl 构建
-        // Evennia WebSocket 是独立 TCP 服务，直接监听端口，不需要路径
         {% if websocket_url %}
             var wsurl = "{{ websocket_url }}";
         {% else %}
             var wsurl = "ws://" + window.location.hostname + ":{{ websocket_port }}";
         {% endif %}
-
-        // 完整 WebSocket URL: wsurl?csessid&cuid&browser
         var ws_query_url = wsurl + "?" + csessid + "&" + cuid + "&" + browser;
     </script>
 </head>
 <body>
 
-<!-- 主容器 -->
-<div id="app">
+<!-- ==================== 登录/注册覆盖层 ==================== -->
+<div id="login-overlay">
+    <div id="login-box">
+        <div class="login-banner">
+            <span class="login-icon">🏯</span>
+            <h1>扬州古城</h1>
+            <h2>盛唐风华</h2>
+        </div>
+
+        <!-- 登录表单 -->
+        <form id="login-form" autocomplete="off">
+            <div class="input-group">
+                <label for="login-username">账 号</label>
+                <input type="text" id="login-username" placeholder="请输入账号" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+            </div>
+            <div class="input-group">
+                <label for="login-password">密 码</label>
+                <input type="password" id="login-password" placeholder="请输入密码">
+            </div>
+            <div class="login-error" id="login-error"></div>
+            <button type="submit" class="login-btn" id="login-submit-btn">登 录</button>
+        </form>
+
+        <!-- 注册表单 -->
+        <form id="register-form" autocomplete="off" style="display:none">
+            <div class="input-group">
+                <label for="reg-username">账 号</label>
+                <input type="text" id="reg-username" placeholder="请输入新账号" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+            </div>
+            <div class="input-group">
+                <label for="reg-password">密 码</label>
+                <input type="password" id="reg-password" placeholder="请设置密码（至少6位）">
+            </div>
+            <div class="input-group">
+                <label for="reg-password2">确认密码</label>
+                <input type="password" id="reg-password2" placeholder="请再次输入密码">
+            </div>
+            <div class="login-error" id="reg-error"></div>
+            <button type="submit" class="login-btn">注 册</button>
+        </form>
+
+        <div class="login-toggle">
+            <span id="show-register">没有账号？<a href="#">立即注册</a></span>
+            <span id="show-login" style="display:none">已有账号？<a href="#">返回登录</a></span>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== 游戏主界面（登录后显示） ==================== -->
+<div id="app" style="display:none">
 
     <!-- 顶部聊天屏 -->
     <div id="chat-panel">
@@ -76,7 +114,6 @@
 
     <!-- 下方主体 -->
     <div id="bottom-container">
-        <!-- 左侧面板 -->
         <aside id="side-panel">
             <div class="side-section">
                 <div class="side-title">👤 玩家</div>
@@ -84,21 +121,18 @@
                     <div class="side-empty">暂无其他玩家</div>
                 </div>
             </div>
-
             <div class="side-section">
                 <div class="side-title">🧑 人物</div>
                 <div id="char-list" class="side-list">
                     <div class="side-empty">暂无人物</div>
                 </div>
             </div>
-
             <div class="side-section">
                 <div class="side-title">📦 物品</div>
                 <div id="item-list" class="side-list">
                     <div class="side-empty">暂无物品</div>
                 </div>
             </div>
-
             <div class="side-section" id="status-bar">
                 <div class="side-title">💓 状态</div>
                 <div class="status-item">
@@ -112,7 +146,6 @@
             </div>
         </aside>
 
-        <!-- 中间主区域 -->
         <main id="main-area">
             <div id="room-info">
                 <div id="room-name">扬州城中心</div>
@@ -152,7 +185,6 @@
     </div>
 </div>
 
-<!-- 原生 WebSocket JS -->
 <script src="{% static 'webclient/js/webclient.js' %}"></script>
 </body>
 </html>

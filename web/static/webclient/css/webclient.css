@@ -1,6 +1,7 @@
 /* ============================================================
    扬州古城 · 盛唐风华 — WebClient 样式 (美化 + 响应式)
    配色：暗金 + 墨绿 + 深褐
+   包含：登录/注册覆盖层 + 游戏界面 + 响应式
    ============================================================ */
 
 :root {
@@ -52,6 +53,158 @@ html, body {
 }
 
 input, textarea { -webkit-user-select: text; user-select: text; }
+
+/* ============================================================
+   登录/注册覆盖层
+   ============================================================ */
+
+#login-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background:
+        radial-gradient(ellipse at 50% 30%, rgba(60,40,20,0.3) 0%, transparent 60%),
+        linear-gradient(180deg, #0e0a06 0%, #1a1410 100%);
+}
+
+#login-box {
+    width: 380px;
+    max-width: 92vw;
+    background: linear-gradient(180deg, #1e1814 0%, #18120e 100%);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 36px 32px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+    text-align: center;
+}
+
+.login-banner {
+    margin-bottom: 28px;
+}
+
+.login-banner .login-icon {
+    font-size: 48px;
+    display: block;
+    margin-bottom: 12px;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+}
+
+.login-banner h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-gold-bright);
+    letter-spacing: 8px;
+    margin: 0 0 4px;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.5);
+}
+
+.login-banner h2 {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--text-dim);
+    letter-spacing: 6px;
+    margin: 0;
+}
+
+#login-box .input-group {
+    margin-bottom: 16px;
+    text-align: left;
+}
+
+#login-box .input-group label {
+    display: block;
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+    letter-spacing: 2px;
+    font-weight: 600;
+}
+
+#login-box .input-group input {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-family: var(--font-main);
+    font-size: 16px;
+    outline: none;
+    transition: all 0.2s;
+}
+
+#login-box .input-group input:focus {
+    border-color: var(--border-gold-light);
+    box-shadow: 0 0 0 2px rgba(212,168,75,0.15);
+}
+
+#login-box .input-group input::placeholder {
+    color: var(--text-dim);
+    opacity: 0.6;
+}
+
+.login-error {
+    display: none;
+    color: var(--text-red);
+    font-size: 13px;
+    padding: 8px 12px;
+    margin-bottom: 12px;
+    background: rgba(208,80,80,0.1);
+    border: 1px solid rgba(208,80,80,0.25);
+    border-radius: var(--radius-sm);
+    text-align: center;
+}
+
+.login-btn {
+    width: 100%;
+    padding: 13px;
+    background: linear-gradient(180deg, #c49a3a 0%, #a07820 100%);
+    color: #1a1208;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 4px;
+    font-family: var(--font-main);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+}
+
+.login-btn:hover {
+    background: linear-gradient(180deg, #d4aa4a 0%, #b08830 100%);
+    box-shadow: 0 0 16px rgba(212,168,75,0.35);
+}
+
+.login-btn:active {
+    transform: translateY(1px);
+}
+
+.login-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.login-toggle {
+    margin-top: 18px;
+    font-size: 13px;
+    color: var(--text-dim);
+}
+
+.login-toggle a {
+    color: var(--text-gold);
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.login-toggle a:hover {
+    color: var(--text-gold-bright);
+    text-decoration: underline;
+}
 
 /* ---------- 主容器 ---------- */
 #app {
@@ -418,6 +571,15 @@ input, textarea { -webkit-user-select: text; user-select: text; }
    ============================================================ */
 @media (max-width: 768px) {
     :root { --chat-height: 34vh; }
+
+    /* 登录框移动端适配 */
+    #login-box {
+        width: 88vw;
+        padding: 28px 22px;
+    }
+    .login-banner h1 { font-size: 24px; letter-spacing: 6px; }
+    .login-banner h2 { font-size: 13px; }
+    #login-box .input-group input { font-size: 16px; padding: 10px 12px; }
 
     #chat-header { padding: 8px 12px; }
     #chat-header .title {
