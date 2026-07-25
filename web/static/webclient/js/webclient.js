@@ -46,16 +46,17 @@
     }
 
     // 3. 自动检测：从当前页面 URL 推断
+    // Evennia WebSocket 是独立 TCP 服务，不需要路径，直接 ws://host:port?csessid&cuid&browser
     var pageHost = window.location.hostname || 'localhost';
     var pagePort = window.location.port || (window.location.protocol === 'https:' ? '443' : '80');
     var pageScheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
 
-    // 尝试 Evennia 默认端口 4002
-    candidateUrls.push(pageScheme + '://' + pageHost + ':4002/webclient/ws/?' + csessid + '&' + cuid + '&' + browser);
+    // 尝试 Evennia 默认端口 4002（无路径）
+    candidateUrls.push(pageScheme + '://' + pageHost + ':4002?' + csessid + '&' + cuid + '&' + browser);
 
     // 尝试与页面同端口
     if (pagePort !== '4002') {
-        candidateUrls.push(pageScheme + '://' + pageHost + ':' + pagePort + '/webclient/ws/?' + csessid + '&' + cuid + '&' + browser);
+        candidateUrls.push(pageScheme + '://' + pageHost + ':' + pagePort + '?' + csessid + '&' + cuid + '&' + browser);
     }
 
     // 去重

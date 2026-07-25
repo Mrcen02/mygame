@@ -43,17 +43,15 @@
 
         var cuid = generateUID();
 
-        // 复刻 evennia.js 的 wsurl 构建
+        // 复刻 evennia.js base.html 的 wsurl 构建
+        // Evennia WebSocket 是独立 TCP 服务，直接监听端口，不需要路径
         {% if websocket_url %}
             var wsurl = "{{ websocket_url }}";
         {% else %}
-            var ws_host = window.location.hostname;
-            var ws_port = "{{ websocket_port }}";
-            var ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
-            var wsurl = ws_scheme + "://" + ws_host + ":" + ws_port + "/webclient/ws/";
+            var wsurl = "ws://" + window.location.hostname + ":{{ websocket_port }}";
         {% endif %}
 
-        // 完整 WebSocket URL: wsurl + ? + csessid + & + cuid + & + browser
+        // 完整 WebSocket URL: wsurl?csessid&cuid&browser
         var ws_query_url = wsurl + "?" + csessid + "&" + cuid + "&" + browser;
     </script>
 </head>
